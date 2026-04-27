@@ -2735,6 +2735,7 @@ __metadata:
     react: 19.2.3
     react-native: 0.85.2
     react-native-camera: ^4.2.1
+    react-native-device-info: ^15.0.2
     react-native-safe-area-context: ^5.5.2
     react-test-renderer: 19.2.3
     typescript: ^5.8.3
@@ -7305,6 +7306,15 @@ __metadata:
   dependencies:
     prop-types: ^15.6.2
   checksum: 0e84ce657774694d1cc49395c43a8f2caabc03df36aa77aacfb5c797ad8cfe0368f4807deccc54e82ff2b193e8c2d1ce7ad504eedf7a9fc4719b38e39958a804
+  languageName: node
+  linkType: hard
+
+"react-native-device-info@npm:^15.0.2":
+  version: 15.0.2
+  resolution: "react-native-device-info@npm:15.0.2"
+  peerDependencies:
+    react-native: "*"
+  checksum: 932ec7ccfc885aeb39c455b31c55a1b345bd6fcfc8cf22f63fff88f42aefc82bf44e4b05daeaaa1231c4ea8590f25740ce6a0f38bc24a5c89d68702de832e8d6
   languageName: node
   linkType: hard
 
