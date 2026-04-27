@@ -18,17 +18,22 @@ jobs:
       - name: Install JS deps
         run: yarn install --immutable
 
-      # Restore the last saved fingerprint
+      # Restore the last saved fingerprint using prefix match
       - name: Restore fingerprint
         uses: actions/cache@v4
         with:
           path: .fingerprint.json
-          key: fingerprint-${{ github.ref_name }}
+          key: fingerprint-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            fingerprint-${{ github.ref_name }}-
 
       # Check if native layer changed
       - name: Check if native rebuild needed
         id: check
         run: echo "rebuild=$(node scripts/fingerprint.js check)" >> $GITHUB_OUTPUT
+
+      - name: Debug fingerprint result
+        run: echo "Rebuild needed => ${{ steps.check.outputs.rebuild }}"
 
       # Only runs when native changed ↓
       - name: Install Pods
@@ -44,19 +49,19 @@ jobs:
             -configuration Release \
             -sdk iphonesimulator
 
+      # Generate new fingerprint after build
       - name: Save new fingerprint
         if: steps.check.outputs.rebuild == 'true'
-        run: |
-          node scripts/fingerprint.js generate
-          # Force overwrite the cache with the new fingerprint
+        run: node scripts/fingerprint.js generate
 
+      # Save with unique SHA key — never conflicts
       - name: Update fingerprint cache
         if: steps.check.outputs.rebuild == 'true'
         uses: actions/cache/save@v4
         with:
           path: .fingerprint.json
-          key: fingerprint-${{ github.ref_name }}
+          key: fingerprint-${{ github.ref_name }}-${{ github.sha }}
 
-      # Always runs — JS bundle step
+      # Always runs
       - name: Bundle JS
         run: npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle
