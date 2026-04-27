@@ -39,8 +39,8 @@ jobs:
         if: steps.check.outputs.rebuild == 'true'
         run: |
           xcodebuild \
-            -workspace ios/YourApp.xcworkspace \
-            -scheme YourApp \
+            -workspace ios/RNFingerPrintPOC.xcworkspace \
+            -scheme RNFingerPrintPOC \
             -configuration Release \
             -sdk iphonesimulator
 
