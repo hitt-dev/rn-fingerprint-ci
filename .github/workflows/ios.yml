@@ -1,0 +1,62 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  ios:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install JS deps
+        run: yarn install --immutable
+
+      # Restore the last saved fingerprint
+      - name: Restore fingerprint
+        uses: actions/cache@v4
+        with:
+          path: .fingerprint.json
+          key: fingerprint-${{ github.ref_name }}
+
+      # Check if native layer changed
+      - name: Check if native rebuild needed
+        id: check
+        run: echo "rebuild=$(node scripts/fingerprint.js check)" >> $GITHUB_OUTPUT
+
+      # Only runs when native changed ↓
+      - name: Install Pods
+        if: steps.check.outputs.rebuild == 'true'
+        run: cd ios && pod install
+
+      - name: Build iOS
+        if: steps.check.outputs.rebuild == 'true'
+        run: |
+          xcodebuild \
+            -workspace ios/YourApp.xcworkspace \
+            -scheme YourApp \
+            -configuration Release \
+            -sdk iphonesimulator
+
+      - name: Save new fingerprint
+        if: steps.check.outputs.rebuild == 'true'
+        run: |
+          node scripts/fingerprint.js generate
+          # Force overwrite the cache with the new fingerprint
+
+      - name: Update fingerprint cache
+        if: steps.check.outputs.rebuild == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .fingerprint.json
+          key: fingerprint-${{ github.ref_name }}
+
+      # Always runs — JS bundle step
+      - name: Bundle JS
+        run: npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle
